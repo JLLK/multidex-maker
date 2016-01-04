@@ -34,7 +34,7 @@ public class Main {
         "  [--dump-method=<name>[*]] [--verbose-dump] [--no-files] " +
         "[--core-library]\n" +
         "  [--num-threads=<n>] [--incremental] [--force-jumbo]\n" +
-        "  [--multi-dex [--main-dex-list=<file> [--minimal-main-dex]]\n" +
+        "  [--multi-dex [--main-dex-list=<file> --secondary-dexes-list=<file> [--minimal-main-dex]]\n" +
         "  [--input-list=<file>]\n" +
         "  [<file>.class | <file>.{zip,jar,apk} | <directory>] ...\n" +
         "    Convert a set of classfiles into a dex file, optionally " +

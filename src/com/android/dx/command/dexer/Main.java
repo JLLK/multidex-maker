@@ -192,6 +192,10 @@ public class Main {
 
     private static Set<String> classesInMainDex = null;
 
+    private static List<Set<String>> classesInSecondaryDexes = null;
+
+    private static List<FileNameFilter> filtersInSecondaryDexes = null;
+
     private static List<byte[]> dexOutputArrays = new ArrayList<byte[]>();
 
     private static OutputStreamWriter humanOutWriter = null;
@@ -329,6 +333,10 @@ public class Main {
             classesInMainDex = readPathsFromFile(args.mainDexListFile);
         }
 
+        if (args.secondaryDexListFiles != null) {
+            classesInSecondaryDexes = readSecondaryDexePathFromFile(args.secondaryDexListFiles);
+        }
+
         if (!processAllFiles()) {
             return 1;
         }
@@ -399,6 +407,32 @@ public class Main {
             }
         }
         return paths;
+    }
+
+    private static List<Set<String>> readSecondaryDexePathFromFile(String fileName) throws IOException {
+        List<Set<String>> allsdPaths = new ArrayList<Set<String>>();
+        Set<String> sdPaths = null;
+        BufferedReader bfr = null;
+        try {
+            FileReader fr = new FileReader(fileName);
+            bfr = new BufferedReader(fr);
+            String line;
+            while(null != (line = bfr.readLine())) {
+                if (line.startsWith("--secondary-dex-begin")) {
+                    sdPaths = new HashSet<String>();
+                } else if (line.startsWith("--secondary-dex-end")) {
+                    allsdPaths.add(sdPaths);
+                } else {
+                    sdPaths.add(fixPath(line));
+                }
+            }
+
+        } finally {
+            if (bfr != null) {
+                bfr.close();
+            }
+        }
+        return allsdPaths;
     }
 
     /**
@@ -498,6 +532,20 @@ public class Main {
                 if (args.minimalMainDex) {
                     // start second pass directly in a secondary dex file.
                     createDexFile();
+                }
+
+                // forced in secondary dex
+                if (args.secondaryDexListFiles != null) {
+                    filtersInSecondaryDexes = new ArrayList<FileNameFilter>();
+                    for (int i = 0; i < classesInSecondaryDexes.size(); i++) {
+                        filtersInSecondaryDexes.add(new SecondryDexListFilter(i));
+                    }
+
+                    for (int i = 0; i < fileNames.length; i++) {
+                        for (int j = 0; j < classesInSecondaryDexes.size(); j++) {
+                            processOne(fileNames[i], filtersInSecondaryDexes.get(j);
+                        }
+                    }
                 }
 
                 // remaining files
@@ -1124,6 +1172,31 @@ public class Main {
     }
 
     /**
+     * A filter for secondary dex
+     */
+    private static class SecondryDexListFilter implements FileNameFilter {
+        private final int index;
+
+        public SecondryDexListFilter(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public boolean accept(String fullPath) {
+            Set<String> classesInSecondaryDex = classesInSecondaryDexes.get(index);
+            if (fullPath.endsWith(".class")) {
+                String path = fixPath(fullPath);
+                for (String classPrefix : classesInSecondaryDex) {
+                    if (path.startsWith(classPrefix)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
      * A best effort conservative filter for when file path can <b>not</b> be trusted.
      */
     private static class BestEffortMainDexListFilter implements FileNameFilter {
@@ -1187,6 +1260,8 @@ public class Main {
         private static final String MINIMAL_MAIN_DEX_OPTION = "--minimal-main-dex";
 
         private static final String MAIN_DEX_LIST_OPTION = "--main-dex-list";
+
+        private static final String SECONDARY_DEXES_LIST_OPTION = "--secondary-dexes-list";
 
         private static final String MULTI_DEX_OPTION = "--multi-dex";
 
@@ -1284,6 +1359,9 @@ public class Main {
         /** Optional file containing a list of class files containing classes to be forced in main
          * dex */
         public String mainDexListFile = null;
+
+        /** Optional file containing a list of class files containing classes to be forced in secondary dex */
+        public String secondaryDexListFiles = null;
 
         /** Produce the smallest possible main dex. Ignored unless multiDex is true and
          * mainDexListFile is specified and non empty. */
@@ -1489,6 +1567,8 @@ public class Main {
                     multiDex = true;
                 } else if (parser.isArg(MAIN_DEX_LIST_OPTION + "=")) {
                     mainDexListFile = parser.getLastValue();
+                } else if (parser.isArg(SECONDARY_DEXES_LIST_OPTION + "=")) {
+                    secondaryDexListFiles = parser.getLastValue();
                 } else if (parser.isArg(MINIMAL_MAIN_DEX_OPTION)) {
                     minimalMainDex = true;
                 } else if (parser.isArg("--set-max-idx-number=")) { // undocumented test option
@@ -1531,6 +1611,12 @@ public class Main {
 
             if (mainDexListFile != null && !multiDex) {
                 System.err.println(MAIN_DEX_LIST_OPTION + " is only supported in combination with "
+                    + MULTI_DEX_OPTION);
+                throw new UsageException();
+            }
+
+            if (secondaryDexListFiles != null && !multiDex) {
+                System.err.println(SECONDARY_DEXES_LIST_OPTION + " is only supported in combination with "
                     + MULTI_DEX_OPTION);
                 throw new UsageException();
             }
