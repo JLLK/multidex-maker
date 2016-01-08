@@ -33,29 +33,29 @@ all: clean install
 
 
 build: createSourceFile
-	$(info "build")
+	$(info build)
 	@javac -cp $(CLASSPATH) \@$(SOURCE_FILE)
 
 
 createSourceFile: 
-	$(info "createSourceFile")
+	$(info createSourceFile)
 	$(shell find . -name "*.java" > $(SOURCE_FILE))
 
 
 jar: build
-	$(info "jar")
+	$(info jar)
 	@jar cvfm $(DEX_JAR) $(MANIFEST_FILE) -C $(SOURCE_DIR) .
 
 
 install: jar
-	$(info "install")
+	$(info install)
 	@cp $(DEX_LIB_PATH)/$(DEX_JAR) $(DEX_LIB_PATH)/$(BAK_DEX_JAR) && \
 	mv $(LOCAL_PATH)/$(DEX_JAR) $(DEX_LIB_PATH)/$(DEX_JAR)
-	$(info "install done.")
+	$(info install done.)
 
 
 clean:
-	$(info "clean")
+	$(info clean)
 	@rm $(DEX_JAR) -rvf \
 	rm $(SOURCE_FILE) -rvf \
 	$(shell find . -name "*.class" | while read x; do rm $$x; done)
