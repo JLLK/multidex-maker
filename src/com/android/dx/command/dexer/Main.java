@@ -422,7 +422,7 @@ public class Main {
                     sdPaths = new HashSet<String>();
                 } else if (line.startsWith("--secondary-dex-end")) {
                     allsdPaths.add(sdPaths);
-                } else {
+                } else if (!"".equals(line)) {
                     sdPaths.add(fixPath(line));
                 }
             }
@@ -543,14 +543,15 @@ public class Main {
 
                     for (int i = 0; i < fileNames.length; i++) {
                         for (int j = 0; j < classesInSecondaryDexes.size(); j++) {
-                            processOne(fileNames[i], filtersInSecondaryDexes.get(j);
+                            processOne(fileNames[i], filtersInSecondaryDexes.get(j));
+                            createDexFile();
                         }
                     }
                 }
 
                 // remaining files
                 for (int i = 0; i < fileNames.length; i++) {
-                    processOne(fileNames[i], new NotFilter(mainPassFilter));
+                    processOne(fileNames[i], new PowerfulNotFilter(new NotFilter(mainPassFilter)));
                 }
             } else {
                 // without --main-dex-list
@@ -1155,6 +1156,28 @@ public class Main {
         }
     }
 
+    private static class PowerfulNotFilter implements FileNameFilter {
+        private final FileNameFilter filter;
+
+        private PowerfulNotFilter(FileNameFilter filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean accept(String path) {
+            return filter.accept(path) && !inSecondaryDexes(path);
+        }
+
+        private boolean inSecondaryDexes(String path) {
+            for (FileNameFilter filter : filtersInSecondaryDexes) {
+                if (filter.accept(path)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     /**
      * A quick and accurate filter for when file path can be trusted.
      */
@@ -1188,7 +1211,7 @@ public class Main {
                 String path = fixPath(fullPath);
                 for (String classPrefix : classesInSecondaryDex) {
                     if (path.startsWith(classPrefix)) {
-                        return true;
+                        return !classesInMainDex.contains(path);
                     }
                 }
             }
