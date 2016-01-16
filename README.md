@@ -1,9 +1,9 @@
 # multidex-maker
-- - -
-A dex tool which ensures the specified class in the specified secondary dex
+
+A dex tool which ensures the specified class in the specified secondary dex.
 
 # Purpose
-- - -
+
 Because the Android apps usually consist of independent modules,  I had  modified the dx tool of AOSP to keeping each module in a separate dex, benifits are as follows:
 
 * A small enough main dex to avoid [main dex capacity exceeded](http://ct2wj.com/2015/12/22/the-way-to-solve-main-dex-capacity-exceeded-in-Android-gradle-build/).
@@ -12,7 +12,7 @@ Because the Android apps usually consist of independent modules,  I had  modifie
 
 
 # Installation
-- - -
+
 
 ## 1. Exec shellscript
 
@@ -26,18 +26,6 @@ build.gradle
 ```
 ```groovy
 android {
-    compileSdkVersion 17
-    buildToolsVersion "23.0.1"
-
-    defaultConfig {
-        applicationId "com.github.jllk.multidex.sample"
-        minSdkVersion 9
-        targetSdkVersion 17
-        versionCode 1
-        versionName "1.0"
-        multiDexEnabled true
-    }
-
     afterEvaluate {
         tasks.matching {
             it.name.startsWith("dex")
@@ -55,7 +43,7 @@ android {
 
 # 3. Add secondarydexeslist.txt
 
-Exmaple
+Exmaple:
 
 ```
 --secondary-dex-begin    
@@ -85,10 +73,6 @@ com/github/jllk/multidex/sample/d/
 
 # 4. Apply multidex-installer and multidex-hook
 
-[https://github.com/JLLK/multidex-installer](https://github.com/JLLK/multidex-installer)
-
-[https://github.com/JLLK/multidex-hook](https://github.com/JLLK/multidex-hook)
-
 `build.gradle`
 
 
@@ -96,8 +80,7 @@ com/github/jllk/multidex/sample/d/
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile "com.github.jllk:multidex-installer:0.0.4-beta@aar"
-    compile "org.scala-lang:scala-library:2.11.7"
-    compile "org.scala-lang:scala-reflect:2.11.7"
+    compile "com.github.jllk:multidex-hook:0.0.1-beta@aar"
 }
 ```
 
@@ -120,7 +103,7 @@ class SampleApp extends Application {
 ```
 
 # Outcomes
-- - -
+
 After building we get main dex and secondary dexes in order, and we can load part of them or all:
 
 ```
@@ -136,6 +119,14 @@ After building we get main dex and secondary dexes in order, and we can load par
 28K	classes9.dex
 ```
 
+# See also
+
+multidex-installer: [https://github.com/JLLK/multidex-installer](https://github.com/JLLK/multidex-installer)
+
+multidex-hook: [https://github.com/JLLK/multidex-hook](https://github.com/JLLK/multidex-hook)
+
+multidex-sample: [https://github.com/JLLK/multidex-sample](https://github.com/JLLK/multidex-sample)
+
 # License
-- - -
+
 This tool is licensed under Apache License 2.0. See LICENSE for details.
