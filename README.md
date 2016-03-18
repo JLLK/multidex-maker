@@ -14,13 +14,14 @@ Because the Android apps usually consist of independent modules,  I had  modifie
 # Installation
 
 
-## 1. Exec shellscript
+1) Exec shellscript
 
 ```
 ./install.sh
 ```
 
-## 2. Modify buildscript
+2) Modify buildscript
+
 ```
 build.gradle
 ```
@@ -41,7 +42,7 @@ android {
 }
 ```
 
-# 3. Add secondarydexeslist.txt
+3) Add secondarydexeslist.txt
 
 Exmaple:
 
@@ -71,7 +72,7 @@ com/github/jllk/multidex/sample/d/
 --secondary-dex-end
 ```
 
-# 4. Apply multidex-installer and multidex-hook
+4) Apply multidex-installer and multidex-hook
 
 `build.gradle`
 
